@@ -1,0 +1,164 @@
+.reserve-manage-wrap {
+  padding: 20px;
+  font-family: "Microsoft Yahei", sans-serif;
+}
+
+.reserve-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: nowrap;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.filter-input, .filter-select {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.search-btn {
+  padding: 8px 20px;
+  background-color: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.search-btn:hover {
+  background-color: #337ecc;
+}
+
+.reserve-table-container {
+  overflow-x: auto;
+}
+
+.reserve-table{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.reserve-table th, .reserve-table td {
+  padding: 12px 15px;
+  border: 1px solid #eee;
+  text-align: left;
+}
+
+.reserve-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.reserve-table tr:hover {
+  background-color: #f5f9ff;
+}
+
+.resv-id-link {
+  color: #409eff !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+}
+
+.resv-id-link:hover {
+  color: #337ecc;
+}
+
+.operate-btn {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.approve-btn {
+  background-color: #67c23a;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #f56c6c;
+  color: white;
+}
+
+.complete-btn {
+  background-color: #909399;
+  color: white;
+}
+
+.detail-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+}
+
+.close-modal:hover {
+  color: #333;
+}
+
+.modal-title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #333;
+}
+
+.detail-content {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.detail-item {
+  margin-bottom: 10px;
+}
+
+.detail-label {
+  display: inline-block;
+  width: 100px;
+  font-weight: 600;
+  color: #666;
+}

@@ -1,15 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as guestDao from '../dao/guestDao.js';
 import { saveCode, verifyCode } from '../dao/verificationCodeDao.js'; 
-// import { sendSms } from '../utils/smsSender.js'; // 短信发送（对接阿里云/腾讯云）
+// import { sendSms } from '../utils/smsSender.js'; // 短信发送
 
 
 export const sendRegisterCode = async (phone) => {
   if (!/^1[3-9]\d{9}$/.test(phone)) throw new AppError('手机号格式错误', 400);
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   await saveCode(phone, code, 5 * 60);
-  // await sendSms(phone, `【XX餐厅】您的注册/登录验证码：${code}, 5分钟内有效`);
-  return { code: code, message: '验证码发送成功, 5分钟内有效' };
+  // await sendSms(phone, `【Hilton餐厅】您的注册/登录验证码：${code}, 5分钟内有效`);
+  return { message: '验证码发送成功, 5分钟内有效' };
 };
 
 

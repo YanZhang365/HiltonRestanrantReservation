@@ -1,8 +1,8 @@
 import { scope } from '../config/couchbase.js';
-import { AppError } from '../utils/errorHandler.js';
+import { AppError } from '../utils/response.js';
 import logger from '../utils/logger.js';
 
-const guestCollection = scope.collection('guests');
+const guestCollection = scope?.collection('guests');
 
 export const createGuest = async (guestData) => {
   try {
@@ -20,7 +20,7 @@ export const getGuestById = async (guest_id) => {
     const result = await guestCollection.get(guest_id);
     return result.content;
   } catch (error) {
-    if (error.code === 13) { // Couchbase文档不存在错误码
+    if (error.code === 13) { 
       throw new AppError('客人信息不存在', 404);
     }
     logger.error('查询客人失败', error);
@@ -39,7 +39,8 @@ export const getGuestByPhoneNum = async (phone) => {
     `;
     const queryResult = await scope.query(n1ql, { parameters: [phone] });
     if (queryResult.rows.length === 0) {
-      throw new AppError('客人信息不存在', 404);
+      logger.info('客人信息不存在,自动创建账号', 404);
+      return null; 
     }
     return queryResult.rows[0].guests; 
   } catch (error) {

@@ -1,0 +1,57 @@
+<!-- 员工审批中心子页面 -->
+<div class="reserve-manage-wrap">
+  <!-- 筛选区域 -->
+  <div class="reserve-filter-bar">
+    <div class="filter-item">
+      <label>预约日期：</label>
+      <input type="date" id="reserve-date" class="filter-input">
+      <label>预约时段 <span class="required">*</span></label>
+      <select id="reserve-time" class="filter-select">
+        <option value="">请选择预约时段</option>
+        <option value="11:00-13:00">11:00-13:00</option>
+        <option value="13:00-15:00">13:00-15:00</option>
+        <option value="17:00-19:00">17:00-19:00</option>
+        <option value="19:00-21:00">19:00-21:00</option>
+      </select>
+      <label>状态：</label>
+      <select id="reserve-status" class="filter-select">
+        <option value="">全部</option>
+        <option value="Requested">待审批</option>
+        <option value="Approved">已审批</option>
+        <option value="Completed">已完成</option>
+        <option value="Cancelled">已取消</option>
+      </select>
+      <button id="search-btn" class="search-btn">搜索</button>
+    </div>
+  </div>
+
+  <!-- 预约列表表格 -->
+  <div class="reserve-table-container">
+    <table class="reserve-table" style="width: 100%;">
+      <thead>
+        <tr>
+          <th>预约</th>
+          <th>客人姓名</th>
+          <th>客人电话</th>
+          <th>桌位ID</th>
+          <th>预约日期</th>
+          <th>预约时间</th>
+          <th>预约状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="reserve-table-body">
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 预约详情弹窗 -->
+  <div class="detail-modal" id="detail-modal">
+    <div class="modal-content">
+      <span class="close-modal" id="close-modal">&times;</span>
+      <h3 class="modal-title">预约详情</h3>
+      <div class="detail-content" id="detail-content">
+      </div>
+    </div>
+  </div>
+</div>

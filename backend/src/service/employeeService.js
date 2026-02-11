@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'; // 加密
 import { generateToken } from '../utils/auth.js'; 
-import { AppError } from '../utils/errorHandler.js';
+import { AppError } from '../utils/response.js';
 import logger from '../utils/logger.js';
 import { getEmployeeByJobNo } from '../dao/employeeDao.js';
 

@@ -1,5 +1,5 @@
-import { AppError } from '../utils/errorHandler.js';
-import { RESERVATION_STATUS } from './constants.js';
+import { AppError } from './response.js';
+import { RESERVATION_STATUS } from '../config/constants.js';
 
 export const validateReservationStatus = (status) => {
   if (!Object.values(RESERVATION_STATUS).includes(status)) {
@@ -7,10 +7,10 @@ export const validateReservationStatus = (status) => {
   }
 };
 
-export const validateFutureTime = (time) => {
-  const arrivalTime = new Date(time);
+export const validateFutureTime = (date, time) => {
+  const arrivalDateTime = new Date(date,time);
   const now = new Date();
-  if (arrivalTime < now) {
+  if (arrivalDateTime < now) {
     throw new AppError('预约时间必须为未来时间', 400);
   }
 };

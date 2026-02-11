@@ -1,7 +1,7 @@
 import { scope } from '../config/couchbase.js';
-import { AppError } from '../utils/errorHandler.js';
+import { AppError } from '../utils/response.js';
 
-const tableCollection = scope.collection('tables');
+const tableCollection = scope?.collection('tables');
 
 export const getTablesByIds = async (tableIds) => {
   try {
@@ -24,3 +24,31 @@ export const getTablesByIds = async (tableIds) => {
     throw error;
   }
 };
+export const getAllTables = async (tableIds) => {
+  try {    
+    const query = `
+      SELECT table_id, table_no, capacity, is_active
+      FROM ${process.env.COUCHBASE_BUCKET}.${process.env.COUCHBASE_SCOPE}.tables
+    `;
+    const result = await scope.query(query);
+    return result.rows;
+  }
+  catch (error) {
+    throw new AppError('查询桌台失败', 500);
+  }
+}
+
+export const getTableTypeByCapacity = async (capacity) => {
+  try {
+    const query = `
+      SELECT table_id
+      FROM ${process.env.COUCHBASE_BUCKET}.${process.env.COUCHBASE_SCOPE}.tables
+      WHERE capacity >= $1 AND is_active = true
+      ORDER BY capacity DESC
+    `;
+    const result = await scope.query(query, { parameters: [capacity] });
+    return result.rows.map(row => row.table_id);
+  } catch (error) {
+    throw new AppError('查询桌台失败', 500);
+  }
+}

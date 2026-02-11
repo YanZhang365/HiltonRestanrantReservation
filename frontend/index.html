@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>餐厅预约系统</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.8.2/dist/index.css">
+  <link rel="stylesheet" href="./common/spa.css">
+  <link rel="stylesheet" href="./guest/guest.css">
+  <style>
+    .spa-page {
+      display: none;
+    }
+
+    .spa-page.active {
+      display: block;
+    }
+
+    .error-tip {
+      display: none;
+      color: red;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .error-tip.show {
+      display: block;
+    }
+
+    .tab-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    .tab-btn.active {
+      background: #409eff;
+      color: white;
+      border-radius: 4px;
+    }
+
+    .form-item {
+      margin-bottom: 16px;
+    }
+
+    .code-wrap {
+      display: flex;
+      gap: 8px;
+    }
+
+    .code-wrap input {
+      flex: 1;
+    }
+
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .login-btn {
+      background: #409eff;
+      color: white;
+      width: 100%;
+      padding: 12px;
+    }
+
+    .logout-btn {
+      background: #f56c6c;
+      color: white;
+      margin-top: 16px;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="spa-root">
+    <div class="spa-page" data-route="/">
+      <div class="container">
+        <div class="page-title">餐厅预约系统</div>
+        <div class="tab-group">
+          <div class="tab-btn active" data-type="guest">客人登录</div>
+          <div class="tab-btn" data-type="employee">员工登录</div>
+        </div>
+        <!-- 客人登录表单 -->
+        <div class="login-form guest-form">
+          <div class="form-item">
+            <label>手机号</label>
+            <input type="tel" id="guest-phone" placeholder="请输入11位手机号" maxlength="11">
+            <div class="error-tip" id="phone-tip">请输入正确的11位手机号</div>
+          </div>
+          <div class="form-item">
+            <label>验证码</label>
+            <div class="code-wrap">
+              <input type="text" id="guest-code" placeholder="请输入6位验证码" maxlength="6">
+              <button id="send-code" disabled type="button">发送验证码</button>
+            </div>
+            <div class="error-tip" id="code-tip">请输入6位验证码</div>
+          </div>
+          <button class="login-btn" id="guest-login" type="button">立即登录</button>
+        </div>
+        <!-- 员工登录表单（默认隐藏） -->
+        <div class="login-form employee-form" style="display: none;">
+          <div class="form-item">
+            <label>工号</label>
+            <input type="text" id="emp-jobNo" placeholder="请输入员工工号">
+            <div class="error-tip" id="jobNo-tip">请输入员工工号</div>
+          </div>
+          <div class="form-item">
+            <label>密码</label>
+            <input type="password" id="emp-pwd" placeholder="请输入登录密码">
+            <div class="error-tip" id="pwd-tip">请输入登录密码</div>
+          </div>
+          <button class="login-btn" id="emp-login" type="button">立即登录</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 客人页 /guest -->
+    <div class="spa-page" data-route="/guest">
+      <div class="biz-page">
+        <div class="biz-title">客人预约中心
+          <button class="logout-btn" id="guest-logout" type="button">退出登录</button>
+        </div>
+        <div class="user-info" id="guest-info">您好，尊敬的客人（手机号：***）</div>
+        <div id="guest-reserve-container"></div>
+      </div>
+    </div>
+
+    <!-- 3. 员工页 /employee -->
+    <div class="spa-page" data-route="/employee">
+      <div class="biz-page">
+        <div class="title-bar">
+          <div class="biz-title">员工审批中心</div>
+          <div class="right-wrap"> 
+            <div class="user-info" id="emp-info">您好，员工（工号：***）</div>
+            <button class="logout-btn" id="emp-logout" type="button">退出登录</button>
+          </div>
+        </div>
+        <div>
+          <div id="reserve-manage-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
+  <script src="./gql-api.js"></script>
+  <script src="./common/common.js"></script>
+  <script src="./guest/guest.js"></script>
+  <script src="./employee/employee.js"></script>
+  <script>
+    
+    const SPA_ROOT = document.getElementById('spa-root');
+    const PAGE_TEMPLATES = document.querySelectorAll('.spa-page');
+    const WHITE_LIST = ['/'];
+    const ROUTE_MAP = {};
+    PAGE_TEMPLATES.forEach(tpl => ROUTE_MAP[tpl.dataset.route] = tpl);
+
+
+    const STATE = {
+      codeCountdown: 0, 
+      codeTimer: null,   
+      guestLoginSubmitting: false, 
+      empLoginSubmitting: false    
+    };
+
+
+    function renderPage(routePath) {
+      PAGE_TEMPLATES.forEach(tpl => tpl.classList.remove('active'));
+      const targetPage = ROUTE_MAP[routePath] || ROUTE_MAP['/'];
+      targetPage.classList.add('active');
+      renderUserInfo(routePath);
+    }
+
+    function pushRoute(routePath) {
+      window.history.pushState({ path: routePath }, '', routePath);
+      renderPage(routePath);
+    }
+
+    window.addEventListener('popstate', (e) => {
+      const currentPath = e.state?.path || '/';
+      if (!WHITE_LIST.includes(currentPath) && !isLogin()) {
+        pushRoute('/');
+        return;
+      }
+      renderPage(currentPath);
+    });
+
+    function isLogin() {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      return !!token && !!user;
+    }
+
+    function getUserInfo() {
+      if (!isLogin()) return null;
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return null;
+      try {
+        return JSON.parse(userStr);
+      } catch (err) {
+        console.error('解析用户信息失败：', err);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        return null;
+      }
+    }
+
+    function renderUserInfo(routePath) {
+      const user = getUserInfo();
+      if (!user) return;
+      if (routePath === '/guest' && user.type === 'guest') {
+        document.getElementById('guest-info').innerText = `您好，尊敬的客人（手机号：${user.contact.phone}）`;
+      }
+      if (routePath === '/employee' && user.type === 'employee') {
+        document.getElementById('emp-info').innerText = `您好，员工（工号：${user.job_no}，姓名：${user.name || '未知'}）`;
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      pushRoute('/');
+      alert('退出登录成功！');
+    }
+
+    function switchLoginType(targetBtn) {
+      const TAB_BTNS = document.querySelectorAll('.tab-btn');
+      TAB_BTNS.forEach(b => b.classList.remove('active'));
+      targetBtn.classList.add('active');
+      const type = targetBtn.dataset.type;
+      const GUEST_FORM = document.querySelector('.guest-form');
+      const EMP_FORM = document.querySelector('.employee-form');
+      if (type === 'guest') {
+        GUEST_FORM.style.display = 'block';
+        EMP_FORM.style.display = 'none';
+      } else {
+        GUEST_FORM.style.display = 'none';
+        EMP_FORM.style.display = 'block';
+      }
+    }
+
+    function checkPhoneInput() {
+      const GUEST_PHONE = document.getElementById('guest-phone');
+      const SEND_CODE_BTN = document.getElementById('send-code');
+      const PHONE_TIP = document.getElementById('phone-tip');
+      const phone = GUEST_PHONE.value.trim();
+      const reg = /^1[3-9]\d{9}$/;
+
+      if (reg.test(phone) && STATE.codeCountdown === 0) {
+        SEND_CODE_BTN.disabled = false;
+        PHONE_TIP.classList.remove('show');
+      } else {
+        SEND_CODE_BTN.disabled = true;
+        PHONE_TIP.classList.toggle('show', !!phone);
+      }
+    }
+
+    async function sendVerifyCode() {
+      const GUEST_PHONE = document.getElementById('guest-phone');
+      const SEND_CODE_BTN = document.getElementById('send-code');
+      const PHONE_TIP = document.getElementById('phone-tip');
+      const phone = GUEST_PHONE.value.trim();
+      if (!/^1[3-9]\d{9}$/.test(phone)) {
+        PHONE_TIP.classList.add('show');
+        return;
+      }
+      if (STATE.codeCountdown > 0) return; // 倒计时中不重复发送
+
+      try {
+        await window.$api.post('/guest/send-code', { phone });
+        alert('验证码发送成功，请注意查收！');
+
+        STATE.codeCountdown = 60;
+        SEND_CODE_BTN.disabled = true;
+        SEND_CODE_BTN.innerText = `${STATE.codeCountdown}秒后重新获取`;
+
+        if (STATE.codeTimer) clearInterval(STATE.codeTimer);
+        STATE.codeTimer = setInterval(() => {
+          STATE.codeCountdown--;
+          SEND_CODE_BTN.innerText = `${STATE.codeCountdown}秒后重新获取`;
+          if (STATE.codeCountdown <= 0) {
+            clearInterval(STATE.codeTimer);
+            STATE.codeTimer = null;
+            SEND_CODE_BTN.innerText = '发送验证码';
+            checkPhoneInput();
+          }
+        }, 1000);
+      } catch (err) {
+        alert('发送验证码失败：' + (err.message || '网络异常'));
+        console.error('发送验证码错误：', err);
+      }
+    }
+
+    async function guestLogin() {
+      const GUEST_PHONE = document.getElementById('guest-phone');
+      const GUEST_CODE = document.getElementById('guest-code');
+      const GUEST_LOGIN_BTN = document.getElementById('guest-login');
+      const PHONE_TIP = document.getElementById('phone-tip');
+      const CODE_TIP = document.getElementById('code-tip');
+
+      if (STATE.guestLoginSubmitting) return;
+
+      const phone = GUEST_PHONE.value.trim();
+      const code = GUEST_CODE.value.trim();
+      let isOk = true;
+
+      if (!/^1[3-9]\d{9}$/.test(phone)) {
+        PHONE_TIP.classList.add('show');
+        isOk = false;
+      } else {
+        PHONE_TIP.classList.remove('show');
+      }
+      if (!/^\d{6}$/.test(code)) {
+        CODE_TIP.classList.add('show');
+        isOk = false;
+      } else {
+        CODE_TIP.classList.remove('show');
+      }
+      if (!isOk) return;
+
+      STATE.guestLoginSubmitting = true;
+      GUEST_LOGIN_BTN.disabled = true;
+      GUEST_LOGIN_BTN.innerText = '登录中...';
+
+      try {
+        const res = await window.$api.post('/guest/login', { phone, code });
+        if (!res || !res.token || res.user.type !== 'guest') {
+          alert('登录失败：后端返回数据异常');
+          return;
+        }
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        pushRoute('/guest');
+        alert('客人登录成功！');
+      } catch (err) {
+        alert('登录失败：' + (err.message || '验证码错误或已过期'));
+        console.error('客人登录错误：', err);
+      } finally {
+        STATE.guestLoginSubmitting = false;
+        GUEST_LOGIN_BTN.disabled = false;
+        GUEST_LOGIN_BTN.innerText = '立即登录';
+      }
+    }
+
+    async function employeeLogin() {
+      const EMP_JOBNO = document.getElementById('emp-jobNo');
+      const EMP_PWD = document.getElementById('emp-pwd');
+      const EMP_LOGIN_BTN = document.getElementById('emp-login');
+      const JOBNO_TIP = document.getElementById('jobNo-tip');
+      const PWD_TIP = document.getElementById('pwd-tip');
+
+      if (STATE.empLoginSubmitting) return;
+
+      const jobNo = EMP_JOBNO.value.trim();
+      const pwd = EMP_PWD.value.trim();
+      let isOk = true;
+
+      if (!jobNo) {
+        JOBNO_TIP.classList.add('show');
+        isOk = false;
+      } else {
+        JOBNO_TIP.classList.remove('show');
+      }
+      if (!pwd) {
+        PWD_TIP.classList.add('show');
+        isOk = false;
+      } else {
+        PWD_TIP.classList.remove('show');
+      }
+      if (!isOk) return;
+
+      STATE.empLoginSubmitting = true;
+      EMP_LOGIN_BTN.disabled = true;
+      EMP_LOGIN_BTN.innerText = '登录中...';
+
+      try {
+        const res = await window.$api.post('/employee/login', { job_no: jobNo, password: pwd });
+        if (!res || !res.token || !res.user || res.user.type !== 'employee') {
+          alert('登录失败：后端返回数据异常');
+          return;
+        }
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        pushRoute('/employee');
+        alert('员工登录成功！');
+      } catch (err) {
+        alert('登录失败：' + (err.message || '工号或密码错误'));
+        console.error('员工登录错误：', err);
+      } finally {
+        STATE.empLoginSubmitting = false;
+        EMP_LOGIN_BTN.disabled = false;
+        EMP_LOGIN_BTN.innerText = '立即登录';
+      }
+    }
+
+    async function loadHtmlTemplate(url, containerId) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`加载模板失败：${response.status}`);
+        const html = await response.text();
+        const container = document.getElementById(containerId);
+        if (container) container.innerHTML = html;
+        return true;
+      } catch (err) {
+        console.error('加载HTML模板错误：', err);
+        return false;
+      }
+    }
+
+    function renderPage(routePath) {
+      PAGE_TEMPLATES.forEach(tpl => tpl.classList.remove('active'));
+      const targetPage = ROUTE_MAP[routePath] || ROUTE_MAP['/'];
+      targetPage.classList.add('active');
+      renderUserInfo(routePath);
+
+      if (routePath === '/guest') {
+        loadHtmlTemplate('./guest/guest.html', 'guest-reserve-container')
+          .then((success) => {
+            if (success) {
+              window.GuestReserve?.init(); 
+            }
+          });
+      }
+      if (routePath === '/employee') {
+        loadHtmlTemplate('./employee/employee.html', 'reserve-manage-container')
+          .then((success) => {
+            if (success) {
+              window.ReserveManage?.init(); 
+            }
+          });
+      }
+    }
+
+
+    function bindAllEvents() {
+      SPA_ROOT.addEventListener('click', (e) => {
+        const target = e.target;
+        const targetId = target.id;
+        const targetClass = target.className;
+
+        if (targetClass.includes('tab-btn')) {
+          switchLoginType(target);
+        }
+        else if (targetId === 'send-code') {
+          sendVerifyCode();
+        }
+        else if (targetId === 'guest-login') {
+          guestLogin();
+        }
+        else if (targetId === 'emp-login') {
+          employeeLogin();
+        }
+        else if (targetId === 'guest-logout') {
+          logout();
+        }
+        else if (targetId === 'emp-logout') {
+          logout();
+        }
+      });
+
+      document.getElementById('guest-phone').addEventListener('input', checkPhoneInput);
+    }
+
+    // ====================== 初始化 ======================
+    function initSPA() {
+      bindAllEvents();
+      const initPath = window.location.pathname;
+      if (!WHITE_LIST.includes(initPath) && !isLogin()) {
+        pushRoute('/');
+        return;
+      }
+      if (initPath === '/' && isLogin()) {
+        const user = getUserInfo();
+        pushRoute(user.type === 'guest' ? '/guest' : '/employee');
+        return;
+      }
+      renderPage(initPath);
+    }
+
+    window.onload = initSPA;
+  </script>
+</body>
+
+</html>

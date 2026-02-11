@@ -27,3 +27,25 @@ export const notFoundHandler = (req, res, next) => {
   const err = new AppError(`接口 ${req.originalUrl} 不存在`, 404);
   next(err);
 };
+
+
+export function sendSuccess(res, data, message = 'success', code = 200) {
+  const response = {
+    data,
+    message,
+    code,
+  };
+  res.status(code).json(response);
+}
+
+export function sendError(res, error, statusCode = 400) {
+  const response = {
+    code: statusCode,
+    message: error instanceof Error ? error.message : String(error),
+  };
+  logger.error({
+    message: 'sendError',
+    response,
+  });
+  res.status(statusCode).json(response);
+}

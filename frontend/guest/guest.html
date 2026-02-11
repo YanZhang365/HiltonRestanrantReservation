@@ -1,0 +1,36 @@
+
+
+<div class="my-reserves-container">
+  <div class="form-title">我的预约</div>
+  <div class="reserve-list" id="reserve-list">
+    <div class="empty-tip">暂无预约记录，请先添加预约</div>
+  </div>
+</div>
+
+<div class="reserve-form-container">
+  <div class="form-title">新增预约</div>
+  <div class="reserve-form">
+    <div class="form-item">
+      <label>预约日期 <span class="required">*</span></label>
+      <input type="date" id="reserve-date" class="form-input">
+      <div class="error-tip" id="date-tip">请选择有效的预约日期（不能选过去的日期）</div>
+    </div>
+    <div class="form-item">
+      <label>预约时段 <span class="required">*</span></label>
+      <select id="reserve-time" class="form-input">
+        <option value="">请选择预约时段</option>
+        <option value="11:00-13:00">11:00-13:00</option>
+        <option value="13:00-15:00">13:00-15:00</option>
+        <option value="17:00-19:00">17:00-19:00</option>
+        <option value="19:00-21:00">19:00-21:00</option>
+      </select>
+      <div class="error-tip" id="time-tip">请选择预约时段</div>
+    </div>
+    <div class="form-item">
+      <label>就餐人数 <span class="required">*</span></label>
+      <input type="number" id="reserve-people" class="form-input" min="1" max="10" placeholder="请输入1-10人">
+      <div class="error-tip" id="people-tip">请输入1-10之间的就餐人数</div>
+    </div>
+    <button class="submit-btn" id="submit-reserve" type="button">提交预约</button>
+  </div>
+</div>

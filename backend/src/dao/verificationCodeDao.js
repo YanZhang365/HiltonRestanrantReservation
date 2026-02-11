@@ -1,8 +1,8 @@
 import { scope } from '../config/couchbase.js';
-import { AppError } from '../utils/errorHandler.js';
+import { AppError } from '../utils/response.js';
 import logger from '../utils/logger.js';
 
-const verificationCollection = scope.collection('verification_codes');
+const verificationCollection = scope?.collection('verification_codes');
 
 export const saveCode = async (phone, code, expireSeconds = 300) => {
   try {
@@ -17,7 +17,7 @@ export const saveCode = async (phone, code, expireSeconds = 300) => {
     };
 
     await verificationCollection.upsert(phone, codeDoc);
-    logger.info(`验证码保存成功，手机号：${phone}`);
+    logger.info(`验证码保存成功，手机号：${phone}, ${code}`);
   } catch (error) {
     logger.error(`保存验证码失败，手机号：${phone}，错误信息：${error.message}`, error.stack);
     throw new AppError('验证码发送失败，请稍后重试', 500);
@@ -31,16 +31,16 @@ export const verifyCode = async (phone, inputCode) => {
 
     const isCodeMatch = codeDoc.code === inputCode;
     const isNotExpired = new Date() < new Date(codeDoc.expire_at);
-    const isUsed = codeDoc.used === undefined || codeDoc.used === false;
+    const isNotUsed = codeDoc.used === undefined || codeDoc.used === false;
 
-    if (isCodeMatch && isNotExpired && isUsed) {
+    if (isCodeMatch && isNotExpired && isNotUsed) {
       codeDoc.used = true;
       await verificationCollection.upsert(phone, codeDoc);
       logger.info(`验证码校验成功，手机号：${phone}`);
       return true;
     }
 
-    logger.warn(`验证码校验失败，手机号：${phone}，原因：${!isCodeMatch ? '验证码不匹配' : (isUsed ? '验证码已使用,请重新获取' : '验证码已过期')}`);
+    logger.warn(`验证码校验失败，手机号：${phone}，原因：${!isCodeMatch ? '验证码不匹配' : (isNotExpired ? '验证码已过期' : '验证码已使用,请重新获取')}`);
     return false;
   } catch (error) {
     if (error.code === 13) {

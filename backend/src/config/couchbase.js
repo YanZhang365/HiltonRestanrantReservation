@@ -15,7 +15,6 @@ const initCouchbase = async () => {
       throw new Error(`缺失Couchbase环境变量:${missingEnv.join(', ')}`);
     }
 
-    // 全局cluster：由Cluster.connect直接生成，挂载完整SDK配置
     cluster = await Cluster.connect(
       `couchbase://${process.env.COUCHBASE_HOST}`,
       { authenticator: new PasswordAuthenticator(process.env.COUCHBASE_USER, process.env.COUCHBASE_PWD) }

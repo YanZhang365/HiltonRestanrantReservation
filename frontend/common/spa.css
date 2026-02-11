@@ -1,0 +1,61 @@
+/* common/spa.css - 餐厅预约系统SPA所有样式 */
+/* 全局基础样式 */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+body { background: #f5f7fa; padding: 20px; }
+.container { max-width: 400px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08); }
+.page-title { text-align: center; font-size: 20px; font-weight: 600; color: #333; margin-bottom: 30px; }
+.form-item { margin-bottom: 25px; }
+.form-item label { display: inline-block; width: 80px; font-size: 14px; color: #333; vertical-align: middle; }
+.form-item input { width: calc(100% - 85px); height: 42px; padding: 0 15px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; vertical-align: middle; outline: none; }
+.form-item input:focus { border-color: #409eff; }
+.code-wrap { display: flex; gap: 10px; width: calc(100% - 85px); display: inline-block; vertical-align: middle; }
+.code-wrap input { flex: 1; width: auto !important; }
+.code-wrap button { width: 120px; height: 42px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; background: #409eff; color: #fff; }
+.code-wrap button:disabled { background: #a0cfff; cursor: not-allowed; }
+.login-btn { width: 100%; height: 42px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; background: #409eff; color: #fff; }
+.login-btn:disabled { background: #a0cfff; cursor: not-allowed; }
+.error-tip { font-size: 12px; color: #f56c6c; margin-top: 6px; margin-left: 85px; display: none; }
+.error-tip.show { display: block; }
+.tab-group { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; }
+.tab-btn { padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+.tab-btn.active { background: #409eff; color: #fff; }
+
+/* SPA核心样式：所有页面模板默认隐藏，激活后显示 */
+.spa-page { display: none; width: 100%; }
+.spa-page.active { display: block; }
+
+/* 客人/员工业务页通用样式 */
+.title-bar {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  width: 100%; 
+  margin-bottom: 20px; 
+}
+.biz-page { max-width: 800px; margin: 30px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08); }
+.biz-title { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 20px; }
+.logout-btn {
+  padding: 6px 12px;
+  background-color: #f56c6c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-block; 
+  visibility: visible;
+}
+.user-info, .emp-info {
+    display: flex !important;
+  align-items: center; 
+  gap: 5px; white-space: nowrap !important;
+  overflow: visible !important;
+  font-size: 14px;
+  color: #666;
+}
+.right-wrap {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto; 
+}

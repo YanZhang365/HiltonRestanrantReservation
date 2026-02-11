@@ -1,16 +1,10 @@
 import { gql } from 'apollo-server-express';
-import {
-  createReservationService,
-  getGuestReservationsService,
-  filterReservationsService,
-  updateReservationStatusService,
-  updateReservationInfoService,
-  getReservationDetailService
-} from '../service/reservationService.js';
+import * as reservationService from '../service/reservationService.js';
 import * as guestService from '../service/guestService.js';
 import { jwtFilter } from '../utils/auth.js';
+import logger from '../utils/logger.js';
 
-// 1. 定义GraphQL Schema（匹配业务需求）
+// GraphQL Schema
 export const typeDefs = gql`
   # 客人联系信息
   type GuestContact {
@@ -36,7 +30,9 @@ export const typeDefs = gql`
     guest_id: String!
     guest_basic_info: GuestBasicInfo!
     table_ids: [String!]!
-    table_total_capacity: Int!
+    table_nos: [String!] # 前端展示用
+    guest_number: Int
+    expected_arrival_date: String!
     expected_arrival_time: String!
     status: ReservationStatus!
     created_at: String!
@@ -52,11 +48,10 @@ export const typeDefs = gql`
     phone: String!
     email: String
   }
-  # 输入类型：创建预约
   input CreateReservationInput {
-    table_ids: [String!]!
+    guest_number: Int!
+    expected_arrival_date: String!
     expected_arrival_time: String!
-    guest_basic_info: GuestBasicInfoInput!
   }
   input GuestBasicInfoInput {
     name: String!
@@ -65,7 +60,8 @@ export const typeDefs = gql`
   }
   # 输入类型：更新预约信息
   input UpdateReservationInfoInput {
-    table_ids: [String!]
+    guest_number: Int
+    expected_arrival_date: String
     expected_arrival_time: String
   }
   # 根查询
@@ -73,7 +69,7 @@ export const typeDefs = gql`
     # 客人：查询我的所有预约
     myReservations: [Reservation!]!
     # 员工：按日期+状态筛选预约
-    filterReservations(date: String!, status: ReservationStatus): [Reservation!]!
+    getReservations(phone: String, date: String, time: String, status: ReservationStatus): [Reservation!]!
     # 查看预约详情
     getReservationDetail(resv_id: String!): Reservation!
   }
@@ -90,24 +86,26 @@ export const typeDefs = gql`
   }
 `;
 
-// 2. 定义GraphQL Resolver（调用Service层，解耦）
+// GraphQL Resolver
 export const resolvers = {
   Query: {
     myReservations: async (_, __, context) => {
       // 从context获取用户信息（jwtFilter中间件挂载）
       const guest_id = context.user.guest_id;
-      return await getGuestReservationsService(guest_id);
+      return await reservationService.getReservationsByGuestId(guest_id);
     },
-    filterReservations: async (_, { date, status }) => {
-      return await filterReservationsService(date, status);
+    getReservations: async (_, filters) => {
+      const { phone = null, date = null, time = null, status = null} = filters || {};
+      return await reservationService.getReservations(phone, date, time, status);
     },
     getReservationDetail: async (_, { resv_id }) => {
-      return await getReservationDetailService(resv_id);
+      return await reservationService.getReservationDetail(resv_id);
     }
   },
   Mutation: {
     createGuest: async (_, { input }) => {
-      const guest = await guestService.createGuestService(input);
+      const guest_id = context.user.guest_id;
+      const guest = await guestService.createGuestService(input, guest_id);
       return {
         name: guest.name,
         phone: guest.contact.phone,
@@ -115,23 +113,22 @@ export const resolvers = {
       };
     },
     createReservation: async (_, { input }, context) => {
-      const guest_id = context.user.id;
-      return await createReservationService(input, guest_id);
+      const guest_id = context.user.guest_id;
+      return await reservationService.createReservation(input, guest_id);
     },
     updateReservationStatus: async (_, { resv_id, newStatus }, context) => {
-      const operatorRole = context.user.role;
-      return await updateReservationStatusService(resv_id, newStatus, operatorRole);
+      const operator = context.user;
+      return await reservationService.updateReservationStatus(resv_id, newStatus, operator);
     },
     updateReservationInfo: async (_, { resv_id, input }, context) => {
-      const guest_id = context.user.id;
-      return await updateReservationInfoService(resv_id, input, guest_id);
-    }
+      const operator = context.user;
+      return await reservationService.updateReservationInfo(resv_id, input, operator);
+    },
   }
 };
 
-// 3. GraphQL上下文（传递用户信息）
+// GraphQL context
 export const context = ({ req }) => {
-  // 验证Token，挂载用户信息到context
   if (req.headers.authorization) {
     jwtFilter(req, {}, () => {});
   }

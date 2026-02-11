@@ -1,9 +1,9 @@
 import { scope } from '../config/couchbase.js';
-import { AppError } from '../utils/errorHandler.js';
+import { AppError } from '../utils/response.js';
 import logger from '../utils/logger.js';
 
 
-const employeeCollection = scope.collection('employees');
+const employeeCollection = scope?.collection('employees');
 
 export const getEmployeeByJobNo = async (job_no) => {
   try {
