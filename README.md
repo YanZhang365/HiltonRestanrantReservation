@@ -20,18 +20,21 @@ Hilton Restaurant Reservation System概述
     
 
 # 部署和运行
+```
 Node.js >= 18.x  
 npm >= 8.x 
 Couchbase Server >= 7.0 
 现代浏览器（Chrome/Firefox/Safari最新版本）
-
+```
 
 # 安装依赖
+```
 cd backend
 npm install
 
 cd frontend
 npm install --save-dev live-server
+```
 
 # 环境配置
 本地启动可以直接使用backend/.env
@@ -41,8 +44,10 @@ npm install --save-dev live-server
     创建Collections: guests, employees, reservations, tables, verification_codes
     
 # 启动服务
-'''cd backend
+```
+cd backend
 npm run dev 
 
 cd frontend
-live-server'''
+live-server
+```
