@@ -8,6 +8,9 @@ Hilton Restaurant Reservation System概述
     GraphQL (Apollo Server): 采用GraphQL替代传统REST API，提供更灵活的数据查询能力，客户端可以精确获取所需数据，减少网络传输
     Couchbase: 选用Couchbase作为NoSQL数据库，其分布式架构和高性能读写特性非常适合预订系统的实时性要求，同时支持灵活的文档结构
     JWT + bcryptjs: JWT用于无状态身份认证，bcryptjs提供安全的密码哈希存储，确保用户信息安全
+
+    客人登录方式：手机号+验证码，验证码目前暂时发到后台输出
+    员工登录方式：员工号+密码
 ## 前端
     原生JavaScript + SPA架构: 采用原生JS实现单页应用，避免框架依赖，提高加载速度和兼容性
     Axios: 用于HTTP请求处理，提供拦截器功能统一处理认证和错误
@@ -42,12 +45,28 @@ npm install --save-dev live-server
     创建Bucket: hilton_reservation 
     创建Scope: reservation_system 
     创建Collections: guests, employees, reservations, tables, verification_codes
-    
+
 # 启动服务
 ```
 cd backend
 npm run dev 
+或
+docker run -d -p 4000:4000 \
+  -e PORT=4000 \
+  -e JWT_SECRET=hilton_restaurant_2026_secret \
+  -e JWT_EXPIRES_IN=4h \
+  -e COUCHBASE_HOST=host.docker.internal \
+  -e COUCHBASE_USER=Administrator \
+  -e COUCHBASE_PWD=soczIb-rirre9-bornam \
+  -e COUCHBASE_BUCKET=restaurant \
+  -e COUCHBASE_SCOPE=core \
+  -e LOG_LEVEL=info \
+  --name reservation-app \
+  reservation:1.0
+
+通过docker logs reservation-app 获取客人登录验证码
 
 cd frontend
 live-server
+
 ```
