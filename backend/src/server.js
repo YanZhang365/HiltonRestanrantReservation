@@ -39,16 +39,6 @@ const startServer = async () => {
         const realErrorMessage = originalError?.message || error.message || '无错误信息';
 
         logger.error('=== GraphQL错误 ===', error.message || '空');
-        const getCircularReplacer = () => {
-          const seen = new WeakSet();
-          return (key, value) => {
-            if (typeof value === "object" && value !== null) {
-              if (seen.has(value)) return '[循环引用]';
-              seen.add(value);
-            }
-            return value;
-          };
-        };
         return {
           message: realErrorMessage, 
           statusCode: error.extensions?.exception?.statusCode || 500
