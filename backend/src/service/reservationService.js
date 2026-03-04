@@ -14,6 +14,9 @@ export const createReservation= async (resvInput, guest_id) => {
   validators.validateFutureTime(expected_arrival_date, expected_arrival_time);
   const guestInfo = await guestDao.getGuestById(guest_id);
   const allowedTableIds = await tableDao.getTableTypeByCapacity(guest_number); 
+  if(allowedTableIds.length === 0){
+    throw new AppError("该时段没有人数适合的空桌，请更换时间或人数", 400);
+  }
   const occupiedTableIds = await reservationDao.checkOccupiedTableByTime(allowedTableIds,expected_arrival_date, expected_arrival_time);
   const availableTableIds = allowedTableIds.filter(id => !occupiedTableIds.has(id));
   if (availableTableIds.length === 0) {
