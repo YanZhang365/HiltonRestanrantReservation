@@ -1,0 +1,19 @@
+[
+  {
+    "_doc_key": "emp_8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+    "contact": {
+      "email": "lina@xxrestaurant.com",
+      "phone": "13912345678"
+    },
+    "created_at": "2026-02-05T10:00:00Z",
+    "employee_id": "emp_8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+    "is_active": true,
+    "job_no": "YG2026001",
+    "name": "李新",
+    "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+    "position": "门店经理",
+    "role": "admin",
+    "store_id": "store_001",
+    "updated_at": "2026-02-05T10:00:00Z"
+  }
+]
