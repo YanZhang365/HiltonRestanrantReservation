@@ -45,7 +45,7 @@ npm install --save-dev live-server
     创建Bucket: hilton_reservation 
     创建Scope: reservation_system 
     创建Collections: guests, employees, reservations, tables, verification_codes
-
+预先load 两个表的数据：employees 和 tables，文件在根目录下：employee_data.json 和 table_data.json ，导入时Import With Document ID 选 _doc_key
 # 启动服务
 ```
 cd backend
@@ -65,6 +65,7 @@ docker run -d -p 4000:4000 \
   reservation:1.0
 
 通过docker logs reservation-app 获取客人登录验证码
+employee 的密码是：password
 
 cd frontend
 live-server
