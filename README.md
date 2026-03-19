@@ -1,4 +1,4 @@
-# HiltonRestanrantReservation
+# RestanrantReservation
 Hilton Restaurant Reservation System概述 
 这是一个基于现代Web技术栈构建的希尔顿餐厅预订管理系统，采用前后端分离架构，提供客人在线预订和员工后台管理功能。 
 
